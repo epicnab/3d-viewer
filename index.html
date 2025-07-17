@@ -70,14 +70,12 @@
     const modelInput = document.getElementById("modelLink");
     const fileInput = document.getElementById("fileInput");
 
-    const radius = "2.5m"; // tetap
+    const radius = "2.5m";
 
-    // Konversi radian ke derajat
     function radToDeg(rad) {
       return rad * (180 / Math.PI);
     }
 
-    // Fungsi rotasi horizontal
     function rotateHorizontal(degrees) {
       const orbit = viewer.getCameraOrbit();
       const currentTheta = radToDeg(orbit.theta);
@@ -88,14 +86,13 @@
       viewer.jumpCameraToGoal();
     }
 
-    // Fungsi rotasi vertikal
     function rotateVertical(degrees) {
       const orbit = viewer.getCameraOrbit();
       const currentTheta = radToDeg(orbit.theta);
       let currentPhi = radToDeg(orbit.phi);
 
       let newPhi = currentPhi + degrees;
-      newPhi = Math.max(-90, Math.min(90, newPhi)); // batas atas bawah
+      newPhi = Math.max(-90, Math.min(90, newPhi)); 
 
       viewer.cameraOrbit = `${currentTheta}deg ${newPhi}deg ${orbit.radius}`;
       viewer.jumpCameraToGoal();
@@ -132,7 +129,6 @@
       });
     }
 
-    // Auto-load jika URL parameter model ada
     const params = new URLSearchParams(window.location.search);
     const modelFromURL = params.get("model");
     if (modelFromURL) {
