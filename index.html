@@ -83,17 +83,21 @@
       }
 
       function rotateHorizontal(degrees) {
-        const orbit = viewer.getCameraOrbit();
-        let currentTheta = orbit.theta.degrees;
-        let currentPhi = orbit.phi.degrees;
-        viewer.cameraOrbit = `${(currentTheta + degrees)}deg ${currentPhi}deg ${orbit.radius}`;
+        const orbit = viewer.getCameraOrbit(); // baca posisi saat ini
+        const currentTheta = parseFloat(orbit.theta.replace("deg", ""));
+        const currentPhi = parseFloat(orbit.phi.replace("deg", ""));
+        theta = (currentTheta + degrees) % 360;
+        phi = currentPhi;
+        updateCameraOrbitInstant();
       }
 
       function rotateVertical(degrees) {
         const orbit = viewer.getCameraOrbit();
-        let currentTheta = orbit.theta.degrees;
-        let currentPhi = Math.max(-90, Math.min(90, orbit.phi.degrees + degrees));
-        viewer.cameraOrbit = `${currentTheta}deg ${currentPhi}deg ${orbit.radius}`;
+        const currentTheta = parseFloat(orbit.theta.replace("deg", ""));
+        const currentPhi = parseFloat(orbit.phi.replace("deg", ""));
+        theta = currentTheta;
+        phi = Math.max(-90, Math.min(90, currentPhi + degrees));
+        updateCameraOrbitInstant();
       }
 
       function loadModelFromLink() {
