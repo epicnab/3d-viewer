@@ -1,149 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>3D Model Viewer with Share & Upload</title>
-    <script
-      type="module"
-      src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"
-    ></script>
-    <style>
-      .box {
-        display: flex;
-        justify-content: center;
-        margin: 20px;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-      model-viewer {
-        width: 800px;
-        height: 600px;
-        border: 1px solid #ccc;
-      }
-      input[type="text"] {
-        padding: 8px;
-        width: 400px;
-      }
-      button {
-        padding: 8px 16px;
-        font-size: 14px;
-      }
-      input[type="file"] {
-        padding: 8px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="box">
-      <input
-        type="text"
-        id="modelLink"
-        placeholder="Masukkan link .glb di sini"
-      />
-      <button onclick="loadModelFromLink()">Load dari Link</button>
-      <button onclick="shareModel()">Bagikan Model</button>
-    </div>
+<head>
+  <meta charset="UTF-8" />
+  <title>3D Model Viewer with Share & Upload</title>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+  <style>
+    .box {
+      display: flex;
+      justify-content: center;
+      margin: 20px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    model-viewer {
+      width: 800px;
+      height: 600px;
+      border: 1px solid #ccc;
+    }
+    input[type="text"] {
+      padding: 8px;
+      width: 400px;
+    }
+    button {
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+    input[type="file"] {
+      padding: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <input
+      type="text"
+      id="modelLink"
+      placeholder="Masukkan link .glb di sini"
+    />
+    <button onclick="loadModelFromLink()">Load dari Link</button>
+    <button onclick="shareModel()">Bagikan Model</button>
+  </div>
 
-    <div class="box">
-      <input type="file" id="fileInput" accept=".glb" />
-      <button onclick="loadModelFromFile()">Load dari File</button>
-    </div>
+  <div class="box">
+    <input type="file" id="fileInput" accept=".glb" />
+    <button onclick="loadModelFromFile()">Load dari File</button>
+  </div>
 
-    <div class="box">
-      <model-viewer
-        id="viewer"
-        src=""
-        camera-controls
-        disable-zoom
-        auto-rotate="false"
-        interaction-prompt="none"
-        camera-orbit="0deg 75deg 2.5m"
-      ></model-viewer>
-    </div>
+  <div class="box">
+    <model-viewer
+      id="viewer"
+      src=""
+      camera-controls
+      disable-zoom
+      auto-rotate="false"
+      interaction-prompt="none"
+      camera-orbit="0deg 75deg 2.5m"
+    ></model-viewer>
+  </div>
 
-    <div class="box">
-      <button onclick="rotateHorizontal(-10)">⟲ Rotate Left</button>
-      <button onclick="rotateHorizontal(10)">⟳ Rotate Right</button>
-      <button onclick="rotateVertical(-10)">⮝ Tilt Up</button>
-      <button onclick="rotateVertical(10)">⮟ Tilt Down</button>
-    </div>
+  <div class="box">
+    <button onclick="rotateHorizontal(-10)">⟲ Rotate Left</button>
+    <button onclick="rotateHorizontal(10)">⟳ Rotate Right</button>
+    <button onclick="rotateVertical(-10)">⮝ Tilt Up</button>
+    <button onclick="rotateVertical(10)">⮟ Tilt Down</button>
+  </div>
 
-    <script>
-      const viewer = document.getElementById("viewer");
-      const modelInput = document.getElementById("modelLink");
-      const fileInput = document.getElementById("fileInput");
+  <script>
+    const viewer = document.getElementById("viewer");
+    const modelInput = document.getElementById("modelLink");
+    const fileInput = document.getElementById("fileInput");
 
-      let theta = 0;
-      let phi = 75;
-      const radius = "2.5m";
+    const radius = "2.5m";
 
-      function updateCameraOrbitInstant() {
-        viewer.cameraOrbit = `${theta}deg ${phi}deg ${radius}`;
-        viewer.jumpCameraToGoal();
+    function radToDeg(rad) {
+      return rad * (180 / Math.PI);
+    }
+
+    function rotateHorizontal(degrees) {
+      const orbit = viewer.getCameraOrbit();
+      const currentTheta = radToDeg(orbit.theta);
+      const currentPhi = radToDeg(orbit.phi);
+
+      const newTheta = currentTheta + degrees;
+      viewer.cameraOrbit = `${newTheta}deg ${currentPhi}deg ${orbit.radius}`;
+      viewer.jumpCameraToGoal();
+    }
+    
+    function rotateVertical(degrees) {
+      const orbit = viewer.getCameraOrbit();
+      const currentTheta = radToDeg(orbit.theta);
+      let currentPhi = radToDeg(orbit.phi);
+
+      let newPhi = currentPhi + degrees;
+      newPhi = Math.max(-90, Math.min(90, newPhi));
+
+      viewer.cameraOrbit = `${currentTheta}deg ${newPhi}deg ${orbit.radius}`;
+      viewer.jumpCameraToGoal();
+    }
+
+    function loadModelFromLink() {
+      const url = modelInput.value.trim();
+      if (!url.endsWith(".glb")) {
+        alert("Harap masukkan link file .glb yang valid.");
+        return;
       }
+      viewer.src = url;
+    }
 
-      function rotateHorizontal(degrees) {
-        const orbit = viewer.getCameraOrbit(); // baca posisi saat ini
-        const currentTheta = parseFloat(orbit.theta.replace("deg", ""));
-        const currentPhi = parseFloat(orbit.phi.replace("deg", ""));
-        theta = (currentTheta + degrees) % 360;
-        phi = currentPhi;
-        updateCameraOrbitInstant();
+    function loadModelFromFile() {
+      const file = fileInput.files[0];
+      if (!file || !file.name.endsWith(".glb")) {
+        alert("Harap unggah file .glb yang valid.");
+        return;
       }
+      const objectURL = URL.createObjectURL(file);
+      viewer.src = objectURL;
+    }
 
-      function rotateVertical(degrees) {
-        const orbit = viewer.getCameraOrbit();
-        const currentTheta = parseFloat(orbit.theta.replace("deg", ""));
-        const currentPhi = parseFloat(orbit.phi.replace("deg", ""));
-        theta = currentTheta;
-        phi = Math.max(-90, Math.min(90, currentPhi + degrees));
-        updateCameraOrbitInstant();
+    function shareModel() {
+      const url = modelInput.value.trim();
+      if (!url || !url.endsWith(".glb")) {
+        alert("Link tidak valid atau tidak tersedia. Hanya bisa membagikan model dari URL.");
+        return;
       }
+      const shareUrl = `${window.location.origin}${window.location.pathname}?model=${encodeURIComponent(url)}`;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert("Link berhasil disalin:\n" + shareUrl);
+      });
+    }
 
-      function loadModelFromLink() {
-        const url = modelInput.value.trim();
-        if (!url.endsWith(".glb")) {
-          alert("Harap masukkan link file .glb yang valid.");
-          return;
-        }
-        viewer.src = url;
-        viewer.addEventListener("load", updateCameraOrbitInstant);
-      }
-
-      function loadModelFromFile() {
-        const file = fileInput.files[0];
-        if (!file || !file.name.endsWith(".glb")) {
-          alert("Harap unggah file .glb yang valid.");
-          return;
-        }
-        const objectURL = URL.createObjectURL(file);
-        viewer.src = objectURL;
-        viewer.addEventListener("load", updateCameraOrbitInstant);
-      }
-
-      function shareModel() {
-        const url = modelInput.value.trim();
-        if (!url || !url.endsWith(".glb")) {
-          alert(
-            "Link tidak valid atau tidak tersedia. Hanya bisa membagikan model dari URL."
-          );
-          return;
-        }
-        const shareUrl = `${window.location.origin}${
-          window.location.pathname
-        }?model=${encodeURIComponent(url)}`;
-        navigator.clipboard.writeText(shareUrl).then(() => {
-          alert("Link berhasil disalin:\n" + shareUrl);
-        });
-      }
-
-      const params = new URLSearchParams(window.location.search);
-      const modelFromURL = params.get("model");
-      if (modelFromURL) {
-        modelInput.value = modelFromURL;
-        viewer.src = modelFromURL;
-        viewer.addEventListener("load", updateCameraOrbitInstant);
-      }
-    </script>
-  </body>
+    const params = new URLSearchParams(window.location.search);
+    const modelFromURL = params.get("model");
+    if (modelFromURL) {
+      modelInput.value = modelFromURL;
+      viewer.src = modelFromURL;
+    }
+  </script>
+</body>
 </html>
